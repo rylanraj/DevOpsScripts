@@ -1,0 +1,29 @@
+---
+# tasks file for frontend_server
+- name: Install nginx on Ubuntu
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+  when: "'server_role_frontend_server' in group_names and ansible_facts['distribution'] == 'Ubuntu'"
+
+- name: Create index.html
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+  when: "'server_role_frontend_server' in group_names and ansible_facts['distribution'] == 'Ubuntu'"
+  notify: Restart Nginx
+
+- name: Copy nginx configuration
+  ansible.builtin.copy:
+    src: default.conf
+    dest: /etc/nginx/sites-available/default
+  when: "'server_role_frontend_server' in group_names and ansible_facts['distribution'] == 'Ubuntu'"
+  notify: Restart Nginx
+
+- name: Enable nginx configuration
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+  when: "'server_role_frontend_server' in group_names and ansible_facts['distribution'] == 'Ubuntu'"
+  notify: Restart Nginx
